@@ -49,4 +49,29 @@ const register = asyncHandler(async (req, res) => {
     
 });
 
-module.exports = {register,};
+const login = asyncHandler(async (req, res) => {
+    const {email,password} = req.body;
+
+    const existingUser = await UserModel.findOne({email});
+
+    
+    if(!existingUser){
+        res.status(403);
+        throw new Error("User not found");
+    }
+    const isMatchPassword = await bcrypt.compare(password, existingUser.password);
+
+    if(!isMatchPassword){
+        res.status(401);
+        throw new Error("Email or Password is not correct");
+    }
+    res.status(200).json({message: "login successfully",
+        data:{
+            id: existingUser._id,
+            email: existingUser.email,
+            accesstoken: await getJsonWebToken(email, existingUser._id),
+        },
+    });
+});
+
+module.exports = {register, login};
