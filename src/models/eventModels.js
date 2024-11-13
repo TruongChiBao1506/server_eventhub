@@ -64,7 +64,10 @@ const EventSchema = new mongoose.Schema({
     updateAt:{
         type:Date,
         default:Date.now(),
-    }
+    },
+    followers:{
+        type:[String],
+    },
 
 });
 
