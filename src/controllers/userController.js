@@ -104,4 +104,63 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 
 });
-module.exports = { getAllUsers, getEventFollowed, updateFcmToken, getProfile, getFollowers, updateProfile };
+
+const updateInterests = asyncHandler(async (req, res) => {
+    const body = req.body;
+    const { uid } = req.query;
+    console.log(uid);
+
+    if (uid && body) {
+        await UserModel.findByIdAndUpdate(uid, {
+            interests: body
+        })
+
+        res.status(200).json({
+            message: 'Update interests successfully!!!',
+            data: body,
+        })
+    }
+    else {
+        res.sendStatus(404);
+        throw new Error('Missing data!!!');
+    }
+});
+
+const toggleFollowing = asyncHandler(async (req, res) => {
+    const { uid, authorId } = req.body;
+    if (uid && authorId) {
+        const user = await UserModel.findById(uid);  
+        if (user) {
+            const { following } = user;
+
+            const items = following ?? [];
+            
+            
+            const index = items.findIndex(item => item === authorId);
+            if(index !== -1){
+                items.splice(index, 1);
+                
+            }else{
+                items.push(`${authorId}`);
+            }
+            await UserModel.findByIdAndUpdate(uid, {
+                following: items
+            });
+            console.log(items);
+            res.status(200).json({
+                message: 'Toggle following successfully!!!',
+                data: items,
+            })
+        } else {
+            res.sendStatus(404);
+            throw new Error('user or author not found!!!');
+            
+        }
+    } else {
+        res.sendStatus(404);
+        throw new Error('Missing data!!!');     
+    }
+
+
+});
+module.exports = { getAllUsers, getEventFollowed, updateFcmToken, getProfile, getFollowers, updateProfile, updateInterests, toggleFollowing };

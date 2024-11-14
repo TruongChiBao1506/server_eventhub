@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const EventModel = require('../models/eventModels');
+const CategoryModel = require('../models/categoryModel');
 
 
 const addNewEvent = asyncHandler(async (req, res) => {
@@ -58,9 +59,24 @@ const getFollowers = asyncHandler(async (req, res) => {
         res.status(401);
         throw new Error('Event not found!!!');
     }
-
-
-
 });
 
-module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers };
+const createCategory = asyncHandler(async (req, res) => {
+    const data = req.body;
+    const newCategory = new CategoryModel(data);
+    
+    newCategory.save();
+    res.status(200).json({
+        message: 'Create category successfully!!!',
+        data: newCategory,
+    })
+});
+
+const getCategories = asyncHandler(async (req, res) => {
+    const items = await CategoryModel.find({});
+    res.status(200).json({
+        message: 'Get categories successfully!!!',
+        data: items,
+    });
+});
+module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers, createCategory,getCategories };
