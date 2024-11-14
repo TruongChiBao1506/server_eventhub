@@ -30,7 +30,17 @@ const getEventFollowed = asyncHandler(async (req, res) => {
         res.status(401)
         throw new Error('Missing uid!')
     }
-
-
 });
-module.exports = { getAllUsers, getEventFollowed };
+const updateFcmToken = asyncHandler(async (req, res) => {
+    const {uid, fcmTokens} = req.body;
+
+    await UserModel.findByIdAndUpdate(uid,{fcmTokens})
+
+    res.status(200).json({
+        message: 'Update fcm token successfully!!!',
+        data :[],
+    })
+});
+
+
+module.exports = { getAllUsers, getEventFollowed, updateFcmToken };

@@ -22,6 +22,9 @@ const UserSchema = new mongoose.Schema({
     updateAt:{
         type:Date,
         default:Date.now(),
+    },
+    fcmTokens:{
+        type: [String],
     }
 
 });
