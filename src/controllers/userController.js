@@ -82,8 +82,9 @@ const getFollowers = asyncHandler(async (req, res) => {
             data: ids,
         })
     } else {
-        throw new Error('Can not find uid!');
         res.status(404)
+        throw new Error('Can not find uid!');
+       
     }
 
 
@@ -163,4 +164,22 @@ const toggleFollowing = asyncHandler(async (req, res) => {
 
 
 });
-module.exports = { getAllUsers, getEventFollowed, updateFcmToken, getProfile, getFollowers, updateProfile, updateInterests, toggleFollowing };
+
+const getFollowing = asyncHandler(async (req, res) => {
+    const { uid } = req.query;
+    if (uid) {
+
+        const user = await UserModel.findById(uid);
+        res.status(200).json({
+            message: 'Get following successfully!!!',
+            data: user.following,
+        })
+    } else {
+        res.status(404)
+        throw new Error('Can not find uid!');
+       
+    }
+
+
+});
+module.exports = { getAllUsers, getEventFollowed, updateFcmToken, getProfile, getFollowers, updateProfile, updateInterests, toggleFollowing,getFollowing };
