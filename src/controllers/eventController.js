@@ -23,9 +23,44 @@ const addNewEvent = asyncHandler(async (req, res) => {
 });
 
 const getEvents = asyncHandler(async (req, res) => {
-    const { lat, lon, distance, limit, date } = req.query;
+    // const { lat, lon, distance, limit, date } = req.query;
 
-    const events = await EventModel.find({}).sort({ createdAt: -1 }).limit(limit ?? 0);
+    // const events = await EventModel.find({}).sort({ createdAt: -1 }).limit(limit ?? 0);
+    const { lat, long, distance, limit, startAt, endAt, date, categoryId, isUpcoming, isPastEvents, title, minPrice, maxPrice } = req.query;
+    const filter = {}
+	
+	if (categoryId) {
+		if (categoryId.includes(',')) {
+			filter.category = {$in: categoryId.split(',')}
+		}else{
+			filter.category = {$eq: categoryId}
+		}
+	}
+
+	if (startAt && endAt) {
+		filter.startAt = {$gt: new Date(startAt).getTime()}
+		filter.endAt = {$lt: new Date(endAt).getTime()}
+	}
+		
+	if (isUpcoming) {
+		filter.startAt = {$gt: Date.now()}
+	}
+
+	if (isPastEvents) {
+		filter.endAt = {$lt: Date.now()}
+	}
+
+	if (title) {
+		filter.title = {$regex: title}
+	}
+
+	if (maxPrice && minPrice) {
+		filter.price = {$lte: parseInt(maxPrice), $gte: parseFloat(minPrice)}
+	}
+
+	const events = await EventModel.find(filter)
+		.sort({ createdAt: -1 })
+		.limit(limit ?? 0);
 
     res.status(200).json({
         message: 'get Events Ok',
@@ -79,4 +114,70 @@ const getCategories = asyncHandler(async (req, res) => {
         data: items,
     });
 });
-module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers, createCategory,getCategories };
+const getEventById = asyncHandler(async (req, res) => {
+	const { id } = req.query;
+
+	const item = await EventModel.findById(id);
+
+	res.status(200).json({
+		message: 'Event detail',
+		data: item ? item : [],
+	});
+});
+const searchEvents = asyncHandler(async (req, res) => {
+	const { title } = req.query;
+
+	const events = await EventModel.find({});
+
+	const items = events.filter((element) =>
+		element.title.toLowerCase().includes(title.toLocaleLowerCase())
+	);
+
+
+	res.status(200).json({
+		message: 'get events ok',
+		data: items,
+	});
+});
+const getEventsByCategoyId = asyncHandler(async (req, res) => {
+	const { categoryId, minPrice, maxPrice } = req.query;
+	const items = await EventModel.find({ category: { $all: categoryId } });
+
+	res.status(200).json({
+		message: 'get Events by categories successfully!!!',
+		data: items,
+	});
+   // Kiểm tra và chuyển đổi giá trị minPrice và maxPrice
+//    const priceQuery = {};
+//    if (minPrice) priceQuery.$gte = Number(minPrice);
+//    if (maxPrice) priceQuery.$lte = Number(maxPrice);
+
+//    try {
+//        // Tạo query động
+//        const query = {};
+
+//        // Chỉ thêm điều kiện category nếu categoryId tồn tại
+//        if (categoryId) {
+//            query.category = { $all: categoryId };
+//        }
+
+//        // Thêm điều kiện price nếu có
+//        if (Object.keys(priceQuery).length > 0) {
+//            query.price = priceQuery;
+//        }
+
+//        // Tìm dữ liệu dựa trên query
+//        const items = await EventModel.find(query);
+
+//        res.status(200).json({
+//            message: 'Get Events successfully!',
+//            data: items,
+//        });
+//    } catch (error) {
+//        res.status(500).json({
+//            message: 'Failed to get events',
+//            error: error.message,
+//        });
+//    }
+});
+module.exports = { addNewEvent, getEvents, updateFollowers, getFollowers, createCategory,getCategories, searchEvents, getEventById, getEventsByCategoyId };
