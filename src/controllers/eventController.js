@@ -64,7 +64,7 @@ const getEvents = asyncHandler(async (req, res) => {
 
     res.status(200).json({
         message: 'get Events Ok',
-        data: date ? events.filter((element) => element.date < new Date(date)) : events,
+        data: date ? events.filter((element) => element.date > new Date(date)) : events,
     });
 
 });
